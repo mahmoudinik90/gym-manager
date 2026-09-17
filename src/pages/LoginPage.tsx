@@ -136,6 +136,9 @@ const LoginPage: React.FC = () => {
             <p className="text-xs text-gray-600 font-mono">
               نام کاربری: <span className="font-bold">admin</span> | رمز عبور: <span className="font-bold">admin123</span>
             </p>
+            <a href="/download" className="inline-flex items-center gap-1 mt-3 text-xs text-blue-600 hover:text-blue-800 underline">
+              📦 دانلود سورس‌کد پروژه
+            </a>
           </div>
         </div>
       </div>

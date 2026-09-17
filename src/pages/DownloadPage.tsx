@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Download, Copy, Check, FileCode, FolderOpen, Github, ChevronDown, ChevronUp, Terminal, ExternalLink } from 'lucide-react';
+import { Download, Copy, Check, FileCode, FolderOpen, Github, ChevronDown, ChevronUp, Terminal, ExternalLink, ArrowRight } from 'lucide-react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
-// Config files content
-const INDEX_HTML = `<!doctype html>
+// محتوای تمام فایل‌های پروژه
+const PROJECT_FILES: { path: string; content: string }[] = [
+  { path: 'index.html', content: `<!doctype html>
 <html lang="fa" dir="rtl">
   <head>
     <meta charset="UTF-8" />
@@ -22,9 +23,8 @@ const INDEX_HTML = `<!doctype html>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
-</html>`;
-
-const PACKAGE_JSON = `{
+</html>` },
+  { path: 'package.json', content: `{
   "name": "gym-management",
   "private": true,
   "version": "1.0.0",
@@ -41,14 +41,11 @@ const PACKAGE_JSON = `{
     "recharts": "^2.10.0",
     "lucide-react": "^0.294.0",
     "react-toastify": "^9.1.3",
-    "date-fns": "^2.30.0",
-    "jszip": "^3.10.1",
-    "file-saver": "^2.0.5"
+    "date-fns": "^2.30.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/file-saver": "^2.0.7",
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
@@ -56,16 +53,14 @@ const PACKAGE_JSON = `{
     "typescript": "^5.3.0",
     "vite": "^5.0.0"
   }
-}`;
-
-const VITE_CONFIG = `import { defineConfig } from 'vite'
+}` },
+  { path: 'vite.config.ts', content: `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-})`;
-
-const TSCONFIG = `{
+})` },
+  { path: 'tsconfig.json', content: `{
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -84,9 +79,8 @@ const TSCONFIG = `{
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
-}`;
-
-const TAILWIND_CONFIG = `/** @type {import('tailwindcss').Config} */
+}` },
+  { path: 'tailwind.config.js', content: `/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
@@ -97,25 +91,22 @@ export default {
     },
   },
   plugins: [],
-}`;
-
-const POSTCSS_CONFIG = `export default {
+}` },
+  { path: 'postcss.config.js', content: `export default {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
   },
-}`;
-
-const GITIGNORE = `node_modules/
+}` },
+  { path: '.gitignore', content: `node_modules/
 dist/
 .env
 .env.local
 .vscode/
 .idea/
 .DS_Store
-Thumbs.db`;
-
-const README_MD = `# 🏋️ سیستم مدیریت باشگاه بدنسازی
+Thumbs.db` },
+  { path: 'README.md', content: `# 🏋️ سیستم مدیریت باشگاه بدنسازی
 
 یک وب اپلیکیشن فرانت‌اند با React برای مدیریت باشگاه بدنسازی.
 
@@ -152,18 +143,7 @@ npm run dev
 - Recharts
 - Lucide React
 - React Toastify
-`;
-
-// All project files
-const PROJECT_FILES: { path: string; content: string }[] = [
-  { path: 'index.html', content: INDEX_HTML },
-  { path: 'package.json', content: PACKAGE_JSON },
-  { path: 'vite.config.ts', content: VITE_CONFIG },
-  { path: 'tsconfig.json', content: TSCONFIG },
-  { path: 'tailwind.config.js', content: TAILWIND_CONFIG },
-  { path: 'postcss.config.js', content: POSTCSS_CONFIG },
-  { path: '.gitignore', content: GITIGNORE },
-  { path: 'README.md', content: README_MD },
+` },
   { path: 'src/main.tsx', content: `import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
@@ -553,7 +533,7 @@ const LoginPage: React.FC = () => {
 export default LoginPage;
 ` },
   { path: 'src/pages/DashboardPage.tsx', content: `import React, { useState, useEffect } from 'react';
-import { Users, Dumbbell, MapPin, TrendingUp, LogOut as LogOutIcon, AlertTriangle } from 'lucide-react';
+import { Users, Dumbbell, MapPin, TrendingUp, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { MOCK_MEMBERS, MOCK_TRAINERS, MOCK_ATTENDANCE } from '../utils/constants';
 import { toPersianNumber, formatDate, formatCurrency, getDaysLeft, formatTime } from '../utils/formatters';
@@ -767,9 +747,9 @@ export default RegisterTrainerPage;
 ` },
   { path: 'src/pages/MemberListPage.tsx', content: `import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Edit3, Trash2, RefreshCw, LogIn, LogOut, X, Save } from 'lucide-react';
+import { Search, Plus, Edit3, Trash2, RefreshCw, X } from 'lucide-react';
 import { MOCK_MEMBERS, MEMBERSHIP_TYPES } from '../utils/constants';
-import { toPersianNumber, formatDate, getDaysLeft, calculateEndDate } from '../utils/formatters';
+import { toPersianNumber, formatDate, calculateEndDate } from '../utils/formatters';
 import { toast } from 'react-toastify';
 
 const MemberListPage: React.FC = () => {
@@ -779,7 +759,6 @@ const MemberListPage: React.FC = () => {
   const [filter, setFilter] = useState('all');
   const [editModal, setEditModal] = useState<any>(null);
   const [renewModal, setRenewModal] = useState<any>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const filtered = useMemo(() => members.filter(m => {
     const s = m.firstName.includes(search) || m.lastName.includes(search) || m.phoneNumber.includes(search) || m.nationalCode.includes(search);
@@ -803,7 +782,7 @@ const MemberListPage: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm"><thead className="bg-gray-50 border-b"><tr><th className="px-4 py-3 text-right text-gray-600">#</th><th className="px-4 py-3 text-right text-gray-600">نام</th><th className="px-4 py-3 text-right text-gray-600">فامیلی</th><th className="px-4 py-3 text-right text-gray-600">تلفن</th><th className="px-4 py-3 text-right text-gray-600">اشتراک</th><th className="px-4 py-3 text-right text-gray-600">پایان</th><th className="px-4 py-3 text-right text-gray-600">وضعیت</th><th className="px-4 py-3 text-center text-gray-600">عملیات</th></tr></thead>
-            <tbody>{filtered.length === 0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">یافت نشد</td></tr> : filtered.map((m, i) => (<tr key={m.id} className="border-b border-gray-50 hover:bg-gray-50"><td className="px-4 py-3 text-gray-600">{toPersianNumber(i + 1)}</td><td className="px-4 py-3 font-medium">{m.firstName}</td><td className="px-4 py-3">{m.lastName}</td><td className="px-4 py-3">{toPersianNumber(m.phoneNumber)}</td><td className="px-4 py-3">{getLabel(m.membershipType)}</td><td className="px-4 py-3">{formatDate(m.endDate)}</td><td className="px-4 py-3">{m.isActive ? <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">فعال</span> : <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">غیرفعال</span>}</td><td className="px-4 py-3"><div className="flex justify-center gap-1"><button onClick={() => setEditModal(m)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit3 className="w-4 h-4" /></button><button onClick={() => setRenewModal(m)} className="p-1.5 text-green-600 hover:bg-green-50 rounded"><RefreshCw className="w-4 h-4" /></button><button onClick={() => { setMembers(p => p.map(x => x.id === m.id ? { ...x, isActive: false } : x)); setDeleteId(null); toast.success('حذف شد'); }} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></div></td></tr>))}</tbody>
+            <tbody>{filtered.length === 0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">یافت نشد</td></tr> : filtered.map((m, i) => (<tr key={m.id} className="border-b border-gray-50 hover:bg-gray-50"><td className="px-4 py-3 text-gray-600">{toPersianNumber(i + 1)}</td><td className="px-4 py-3 font-medium">{m.firstName}</td><td className="px-4 py-3">{m.lastName}</td><td className="px-4 py-3">{toPersianNumber(m.phoneNumber)}</td><td className="px-4 py-3">{getLabel(m.membershipType)}</td><td className="px-4 py-3">{formatDate(m.endDate)}</td><td className="px-4 py-3">{m.isActive ? <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">فعال</span> : <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">غیرفعال</span>}</td><td className="px-4 py-3"><div className="flex justify-center gap-1"><button onClick={() => setEditModal(m)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit3 className="w-4 h-4" /></button><button onClick={() => setRenewModal(m)} className="p-1.5 text-green-600 hover:bg-green-50 rounded"><RefreshCw className="w-4 h-4" /></button><button onClick={() => { setMembers(p => p.map(x => x.id === m.id ? { ...x, isActive: false } : x)); toast.success('حذف شد'); }} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></div></td></tr>))}</tbody>
           </table>
         </div>
         <div className="px-4 py-3 bg-gray-50 border-t text-sm text-gray-600">مجموع: {toPersianNumber(filtered.length)} عضو</div>
@@ -837,7 +816,7 @@ export default MemberListPage;
 ` },
   { path: 'src/pages/TrainerListPage.tsx', content: `import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Edit3, Trash2, ToggleLeft, ToggleRight, X, Save } from 'lucide-react';
+import { Search, Plus, Edit3, Trash2, ToggleLeft, ToggleRight, X } from 'lucide-react';
 import { MOCK_TRAINERS, EMPLOYMENT_TYPES } from '../utils/constants';
 import { toPersianNumber } from '../utils/formatters';
 import { toast } from 'react-toastify';
@@ -847,7 +826,6 @@ const TrainerListPage: React.FC = () => {
   const [trainers, setTrainers] = useState(MOCK_TRAINERS);
   const [search, setSearch] = useState('');
   const [editModal, setEditModal] = useState<any>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const filtered = useMemo(() => trainers.filter(t => t.firstName.includes(search) || t.lastName.includes(search) || t.specialty.includes(search)), [trainers, search]);
   const getLabel = (t: string) => EMPLOYMENT_TYPES.find(x => x.value === t)?.label || t;
@@ -863,7 +841,7 @@ const TrainerListPage: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm"><thead className="bg-gray-50 border-b"><tr><th className="px-4 py-3 text-right text-gray-600">#</th><th className="px-4 py-3 text-right text-gray-600">نام</th><th className="px-4 py-3 text-right text-gray-600">فامیلی</th><th className="px-4 py-3 text-right text-gray-600">تخصص</th><th className="px-4 py-3 text-right text-gray-600">سابقه</th><th className="px-4 py-3 text-right text-gray-600">استخدام</th><th className="px-4 py-3 text-right text-gray-600">وضعیت</th><th className="px-4 py-3 text-center text-gray-600">عملیات</th></tr></thead>
-            <tbody>{filtered.length === 0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">یافت نشد</td></tr> : filtered.map((t, i) => (<tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50"><td className="px-4 py-3">{toPersianNumber(i + 1)}</td><td className="px-4 py-3 font-medium">{t.firstName}</td><td className="px-4 py-3">{t.lastName}</td><td className="px-4 py-3">{t.specialty}</td><td className="px-4 py-3">{toPersianNumber(t.experienceYears)}</td><td className="px-4 py-3">{getLabel(t.employmentType)}</td><td className="px-4 py-3">{t.isActive ? <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">فعال</span> : <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">غیرفعال</span>}</td><td className="px-4 py-3"><div className="flex justify-center gap-1"><button onClick={() => setEditModal(t)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit3 className="w-4 h-4" /></button><button onClick={() => { setTrainers(p => p.map(x => x.id === t.id ? { ...x, isActive: !x.isActive } : x)); toast.success('تغییر وضعیت'); }} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded">{t.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}</button><button onClick={() => { setTrainers(p => p.map(x => x.id === t.id ? { ...x, isActive: false } : x)); setDeleteId(null); toast.success('حذف شد'); }} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></div></td></tr>))}</tbody>
+            <tbody>{filtered.length === 0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">یافت نشد</td></tr> : filtered.map((t, i) => (<tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50"><td className="px-4 py-3">{toPersianNumber(i + 1)}</td><td className="px-4 py-3 font-medium">{t.firstName}</td><td className="px-4 py-3">{t.lastName}</td><td className="px-4 py-3">{t.specialty}</td><td className="px-4 py-3">{toPersianNumber(t.experienceYears)}</td><td className="px-4 py-3">{getLabel(t.employmentType)}</td><td className="px-4 py-3">{t.isActive ? <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">فعال</span> : <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">غیرفعال</span>}</td><td className="px-4 py-3"><div className="flex justify-center gap-1"><button onClick={() => setEditModal(t)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit3 className="w-4 h-4" /></button><button onClick={() => { setTrainers(p => p.map(x => x.id === t.id ? { ...x, isActive: !x.isActive } : x)); toast.success('تغییر وضعیت'); }} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded">{t.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}</button><button onClick={() => { setTrainers(p => p.map(x => x.id === t.id ? { ...x, isActive: false } : x)); toast.success('حذف شد'); }} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></div></td></tr>))}</tbody>
           </table>
         </div>
         <div className="px-4 py-3 bg-gray-50 border-t text-sm text-gray-600">مجموع: {toPersianNumber(filtered.length)} مربی</div>
@@ -875,7 +853,7 @@ const TrainerListPage: React.FC = () => {
 export default TrainerListPage;
 ` },
   { path: 'src/pages/CurrentStatusPage.tsx', content: `import React, { useState } from 'react';
-import { MapPin, Search, LogIn, LogOut, X, UserPlus, Clock, Users } from 'lucide-react';
+import { MapPin, Search, LogIn, LogOut, X, Clock, Users } from 'lucide-react';
 import { MOCK_MEMBERS, MOCK_ATTENDANCE } from '../utils/constants';
 import { toPersianNumber, formatTime, getDuration } from '../utils/formatters';
 import { toast } from 'react-toastify';
@@ -954,7 +932,6 @@ const DownloadPage: React.FC = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [expandedFile, setExpandedFile] = useState<number | null>(null);
   const [downloading, setDownloading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'github' | 'terminal' | 'files'>('github');
 
   const copyToClipboard = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
@@ -991,137 +968,215 @@ git branch -M main
 git push -u origin main`;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-8" dir="rtl">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-l from-[#1a237e] via-[#1565C0] to-[#0d47a1] rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="bg-gradient-to-l from-[#1a237e] via-[#1565C0] to-[#0d47a1] rounded-3xl p-8 md:p-12 text-white mb-8 relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/5 rounded-full translate-x-1/4 translate-y-1/4"></div>
+          
           <div className="relative">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="bg-white/20 p-2 rounded-xl"><Github className="w-8 h-8" /></div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+                <Download className="w-10 h-10" />
+              </div>
               <div>
-                <h1 className="text-3xl font-bold">آپلود در GitHub</h1>
-                <p className="text-blue-200 mt-1">ریپازیتوری: <span className="font-mono bg-white/10 px-2 py-0.5 rounded">YOUR-USERNAME/gym</span></p>
+                <h1 className="text-3xl md:text-4xl font-bold">دانلود سورس‌کد پروژه</h1>
+                <p className="text-blue-200 mt-2 text-lg">سیستم مدیریت باشگاه بدنسازی</p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3 mt-6">
-              <button onClick={downloadZip} disabled={downloading} className="flex items-center gap-2 px-6 py-3 bg-white text-blue-700 rounded-xl hover:bg-blue-50 transition-all font-bold shadow-lg disabled:opacity-50">
+            
+            <div className="mt-8">
+              <button
+                onClick={downloadZip}
+                disabled={downloading}
+                className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-blue-700 rounded-2xl hover:bg-blue-50 transition-all font-bold text-lg shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {downloading ? (
-                  <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>در حال ساخت...</>
-                ) : (<><Download className="w-5 h-5" />دانلود ZIP پروژه</>)}
+                  <>
+                    <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    در حال ساخت فایل ZIP...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-6 h-6" />
+                    دانلود فایل ZIP (همه فایل‌ها)
+                  </>
+                )}
               </button>
             </div>
-            <div className="mt-4 bg-white/10 rounded-xl p-3 text-sm">
-              <p>📁 {PROJECT_FILES.length} فایل | آماده آپلود در GitHub</p>
+
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold">{PROJECT_FILES.length}</p>
+                <p className="text-xs text-blue-200">فایل</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold">8</p>
+                <p className="text-xs text-blue-200">صفحه</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold">React</p>
+                <p className="text-xs text-blue-200">فریمورک</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold">TypeScript</p>
+                <p className="text-xs text-blue-200">زبان</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-gray-100 mb-6">
-          {(['github', 'terminal', 'files'] as const).map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-all ${activeTab === tab ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>
-              {tab === 'github' && <><Github className="w-4 h-4" />راهنمای GitHub</>}
-              {tab === 'terminal' && <><Terminal className="w-4 h-4" />دستورات Git</>}
-              {tab === 'files' && <><FolderOpen className="w-4 h-4" />فایل‌ها</>}
-            </button>
-          ))}
+        {/* Steps */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 md:p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span className="bg-blue-100 text-blue-700 w-10 h-10 rounded-xl flex items-center justify-center text-xl">📋</span>
+            مراحل آپلود در GitHub
+          </h2>
+          
+          <div className="space-y-6">
+            {[
+              { n: 1, icon: '📦', title: 'دانلود فایل ZIP', desc: 'روی دکمه آبی بالا کلیک کنید تا فایل ZIP دانلود شود.' },
+              { n: 2, icon: '📂', title: 'Extract کردن فایل', desc: 'فایل ZIP را از حالت فشرده خارج کنید (کلیک راست → Extract).' },
+              { n: 3, icon: '💻', title: 'باز کردن Terminal', desc: 'در پوشه Extract شده، Terminal یا CMD را باز کنید.' },
+              { n: 4, icon: '⚡', title: 'اجرای دستورات Git', desc: 'دستورات زیر را کپی و در Terminal اجرا کنید:' },
+              { n: 5, icon: '🚀', title: 'تمام!', desc: 'فایل‌ها در ریپازیتوری gym شما آپلود شدند!' },
+            ].map(step => (
+              <div key={step.n} className="flex gap-4 items-start">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-lg">
+                  {step.n}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                    <span className="text-2xl">{step.icon}</span>
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 mt-1">{step.desc}</p>
+                  {step.n === 4 && (
+                    <div className="mt-3 bg-gray-900 rounded-xl p-4 overflow-x-auto shadow-inner" dir="ltr">
+                      <pre className="text-green-400 text-sm font-mono whitespace-pre">{gitCommands}</pre>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* GitHub Guide */}
-        {activeTab === 'github' && (
-          <div className="space-y-4 animate-fadeIn">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">📋 مراحل آپلود (قدم به قدم)</h2>
-              <div className="space-y-6">
-                {[
-                  { n: 1, icon: '📦', title: 'دانلود فایل ZIP', desc: 'روی دکمه "دانلود ZIP" بالا کلیک کنید.' },
-                  { n: 2, icon: '📂', title: 'Extract فایل', desc: 'فایل ZIP را از حالت فشرده خارج کنید.' },
-                  { n: 3, icon: '💻', title: 'باز کردن Terminal', desc: 'در پوشه Extract شده، Terminal باز کنید.' },
-                  { n: 4, icon: '⚡', title: 'اجرای دستورات Git', desc: 'به تب "دستورات Git" بروید و دستورات را کپی/اجرا کنید.' },
-                  { n: 5, icon: '🚀', title: 'تمام!', desc: 'فایل‌ها در ریپازیتوری gym شما آپلود شدند.' },
-                ].map(s => (
-                  <div key={s.n} className="flex gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold">{s.n}</div>
-                    <div><h3 className="font-bold text-gray-800">{s.icon} {s.title}</h3><p className="text-gray-600 text-sm mt-1">{s.desc}</p></div>
-                  </div>
-                ))}
-              </div>
+        {/* Alternative Method */}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg border border-green-200 p-6 md:p-8 mb-8">
+          <h2 className="text-2xl font-bold text-green-800 mb-4 flex items-center gap-3">
+            <span className="text-3xl">🌐</span>
+            روش ساده‌تر: آپلود مستقیم از سایت GitHub
+          </h2>
+          <div className="space-y-3 text-gray-700">
+            <div className="flex gap-3 items-start">
+              <span className="bg-green-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">1</span>
+              <p>به ریپازیتوری <strong className="text-green-700">gym</strong> خود در GitHub بروید</p>
             </div>
-
-            {/* Alternative: Upload via Web */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">🌐 روش جایگزین: آپلود مستقیم از سایت GitHub</h2>
-              <div className="space-y-3 text-sm text-gray-600">
-                <div className="flex gap-3 items-start"><span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span><p>به ریپازیتوری <strong>gym</strong> خود بروید</p></div>
-                <div className="flex gap-3 items-start"><span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span><p><strong>Add file → Upload files</strong> را بزنید</p></div>
-                <div className="flex gap-3 items-start"><span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span><p>فایل‌های Extract شده را Drag & Drop کنید</p></div>
-                <div className="flex gap-3 items-start"><span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</span><p><strong>Commit changes</strong> را بزنید</p></div>
-              </div>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 text-sm"><ExternalLink className="w-4 h-4" />باز کردن GitHub</a>
+            <div className="flex gap-3 items-start">
+              <span className="bg-green-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">2</span>
+              <p>روی <strong className="text-green-700">"Add file"</strong> → <strong className="text-green-700">"Upload files"</strong> کلیک کنید</p>
             </div>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-              <h3 className="font-bold text-amber-800 mb-2">⚠️ نکات مهم</h3>
-              <ul className="text-sm text-amber-700 space-y-1.5 list-disc list-inside">
-                <li>به جای <code className="bg-amber-100 px-1 rounded" dir="ltr">YOUR-USERNAME</code> نام کاربری GitHub خودتان را بنویسید</li>
-                <li>بعد از clone: <code className="bg-amber-100 px-1 rounded" dir="ltr">npm install</code> را اجرا کنید</li>
-                <li>اطلاعات ورود: <strong>admin / admin123</strong></li>
-              </ul>
+            <div className="flex gap-3 items-start">
+              <span className="bg-green-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
+              <p>فایل‌های Extract شده را <strong className="text-green-700">Drag & Drop</strong> کنید</p>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="bg-green-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">4</span>
+              <p>پیام کامیت بنویسید و <strong className="text-green-700">"Commit changes"</strong> را بزنید</p>
             </div>
           </div>
-        )}
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium shadow-lg"
+          >
+            <Github className="w-5 h-5" />
+            باز کردن GitHub
+            <ArrowRight className="w-4 h-4 rotate-180" />
+          </a>
+        </div>
 
-        {/* Terminal */}
-        {activeTab === 'terminal' && (
-          <div className="animate-fadeIn">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="bg-gray-900 px-4 py-3 flex items-center gap-2">
-                <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500"></div><div className="w-3 h-3 rounded-full bg-yellow-500"></div><div className="w-3 h-3 rounded-full bg-green-500"></div></div>
-                <span className="text-gray-400 text-xs mr-4" dir="ltr">Terminal</span>
-                <button onClick={() => { navigator.clipboard.writeText(gitCommands); }} className="mr-auto flex items-center gap-1 text-xs text-gray-400 hover:text-white"><Copy className="w-3 h-3" />کپی</button>
-              </div>
-              <div className="p-6 bg-gray-900" dir="ltr"><pre className="text-green-400 text-sm font-mono whitespace-pre leading-relaxed">{gitCommands}</pre></div>
-            </div>
-            <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-              <h3 className="font-bold text-gray-800 mb-3">📌 دستورات مفید دیگر</h3>
-              <div className="space-y-3">
-                <div className="bg-gray-50 rounded-lg p-3" dir="ltr"><p className="text-xs text-gray-500 mb-1"># نصب وابستگی‌ها</p><code className="text-sm text-gray-700 font-mono">npm install</code></div>
-                <div className="bg-gray-50 rounded-lg p-3" dir="ltr"><p className="text-xs text-gray-500 mb-1"># اجرای پروژه</p><code className="text-sm text-gray-700 font-mono">npm run dev</code></div>
-                <div className="bg-gray-50 rounded-lg p-3" dir="ltr"><p className="text-xs text-gray-500 mb-1"># ساخت نسخه production</p><code className="text-sm text-gray-700 font-mono">npm run build</code></div>
-              </div>
-            </div>
+        {/* Important Notes */}
+        <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 mb-8">
+          <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2 text-lg">
+            <span className="text-2xl">⚠️</span>
+            نکات مهم
+          </h3>
+          <ul className="text-amber-700 space-y-2">
+            <li className="flex items-start gap-2">
+              <span className="text-amber-500 mt-1">•</span>
+              <span>به جای <code className="bg-amber-100 px-2 py-0.5 rounded font-mono" dir="ltr">YOUR-USERNAME</code> نام کاربری GitHub خود را بنویسید</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-amber-500 mt-1">•</span>
+              <span>فایل <code className="bg-amber-100 px-2 py-0.5 rounded font-mono" dir="ltr">node_modules</code> را آپلود نکنید (در .gitignore هست)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-amber-500 mt-1">•</span>
+              <span>بعد از clone، دستور <code className="bg-amber-100 px-2 py-0.5 rounded font-mono" dir="ltr">npm install</code> را اجرا کنید</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-amber-500 mt-1">•</span>
+              <span>اطلاعات ورود: <strong>admin</strong> / <strong>admin123</strong></span>
+            </li>
+          </ul>
+        </div>
+
+        {/* Files List */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-l from-gray-800 to-gray-900 px-6 py-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-3">
+              <FolderOpen className="w-6 h-6" />
+              فایل‌های پروژه ({PROJECT_FILES.length} فایل)
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">روی هر فایل کلیک کنید تا محتوای آن را ببینید</p>
           </div>
-        )}
-
-        {/* Files */}
-        {activeTab === 'files' && (
-          <div className="space-y-3 animate-fadeIn">
-            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><FolderOpen className="w-5 h-5" />فایل‌های پروژه ({PROJECT_FILES.length})</h2>
+          <div className="divide-y divide-gray-100">
             {PROJECT_FILES.map((file, index) => (
-              <div key={file.path} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedFile(expandedFile === index ? null : index)}>
+              <div key={file.path} className="hover:bg-gray-50 transition-colors">
+                <div
+                  className="flex items-center justify-between px-6 py-4 cursor-pointer"
+                  onClick={() => setExpandedFile(expandedFile === index ? null : index)}
+                >
                   <div className="flex items-center gap-3">
-                    <FileCode className="w-5 h-5 text-blue-500" />
+                    <FileCode className="w-5 h-5 text-blue-500 flex-shrink-0" />
                     <span className="font-mono text-sm font-medium text-gray-700" dir="ltr">{file.path}</span>
+                    <span className="text-xs text-gray-400 hidden sm:inline">({file.content.length} کاراکتر)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.content, index); }} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); copyToClipboard(file.content, index); }}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
                       {copiedIndex === index ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                      {copiedIndex === index ? '✓' : 'کپی'}
+                      {copiedIndex === index ? 'کپی شد!' : 'کپی'}
                     </button>
-                    {expandedFile === index ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                    {expandedFile === index ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
                   </div>
                 </div>
+
                 {expandedFile === index && (
-                  <div className="border-t border-gray-100">
-                    <pre className="p-4 overflow-x-auto text-xs leading-relaxed bg-gray-50 max-h-80 overflow-y-auto" dir="ltr"><code className="text-gray-700">{file.content}</code></pre>
+                  <div className="border-t border-gray-100 bg-gray-50">
+                    <pre className="p-6 overflow-x-auto text-xs leading-relaxed max-h-96 overflow-y-auto" dir="ltr">
+                      <code className="text-gray-700 font-mono">{file.content}</code>
+                    </pre>
                   </div>
                 )}
               </div>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-gray-500 text-sm">
+          <p>ساخته شده با ❤️ | React + TypeScript + Tailwind CSS</p>
+        </div>
       </div>
     </div>
   );

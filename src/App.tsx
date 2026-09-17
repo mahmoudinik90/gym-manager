@@ -13,6 +13,7 @@ import CurrentStatusPage from './pages/CurrentStatusPage';
 import MemberListPage from './pages/MemberListPage';
 import TrainerListPage from './pages/TrainerListPage';
 import NotFoundPage from './pages/NotFoundPage';
+import DownloadPage from './pages/DownloadPage';
 
 const App: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const App: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/download" element={<DownloadPage />} />
           
           {/* Protected Routes with Layout */}
           <Route
